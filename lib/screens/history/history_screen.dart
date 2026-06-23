@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 🌟 TAMBAHAN 1: Import Provider 🌟
+import '../../providers/user_provider.dart'; // 🌟 TAMBAHAN 2: Import UserProvider 🌟
 import '../../core/theme/app_colors.dart';
-import '../../models/transaction_model.dart'; // Import model
-import '../../dummy_data/app_data.dart'; // Import dummy data
+import '../../models/transaction_model.dart'; 
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -12,9 +13,6 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
-  // Ambil data dummy yang udah kita buat
-  final List<TransactionModel> _allTransactions = AppData.getTransactions();
 
   @override
   void initState() {
@@ -30,9 +28,13 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    // Pisahin data berdasarkan tipe (deposit / withdrawal)
-    final deposits = _allTransactions.where((t) => t.type == 'deposit').toList();
-    final withdrawals = _allTransactions.where((t) => t.type == 'withdrawal').toList();
+    // 🌟 TAMBAHAN 3: Ambil data histori dari UserProvider 🌟
+    final userProvider = Provider.of<UserProvider>(context);
+    final allTransactions = userProvider.transactions;
+
+    // 🌟 TAMBAHAN 4: Pisahin data langsung dari variabel allTransactions 🌟
+    final deposits = allTransactions.where((t) => t.type == 'deposit').toList();
+    final withdrawals = allTransactions.where((t) => t.type == 'withdrawal').toList();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -148,7 +150,6 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    // Kalau status Selesai warna hijau, kalau Proses warna orange
                     color: trx.status == 'Selesai' ? AppColors.primaryGold : Colors.orange,
                   ),
                 ),

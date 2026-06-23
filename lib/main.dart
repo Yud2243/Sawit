@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart'; // <-- Import package provider
 import 'core/theme/app_colors.dart';
 import 'screens/main_wrapper.dart';
+import 'providers/auth_provider.dart';
+import 'providers/user_provider.dart'; // <-- Import file provider yang baru kita bikin
 
 void main() async {
-  // Wajib ada biar Flutter nungguin Firebase siap dulu
   WidgetsFlutterBinding.ensureInitialized();
 
   // Konfigurasi Firebase Web lu
@@ -19,7 +21,16 @@ void main() async {
     ),
   );
 
-  runApp(const SawOfItApp());
+  // Bungkus aplikasi pake MultiProvider biar "otak tengahnya" aktif
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: const SawOfItApp(),
+    ),
+  );
 }
 
 class SawOfItApp extends StatelessWidget {

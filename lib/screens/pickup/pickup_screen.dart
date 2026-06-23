@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 🌟 TAMBAHAN 1: Import Provider 🌟
+import '../../providers/user_provider.dart'; // 🌟 TAMBAHAN 2: Import UserProvider 🌟
 import '../../core/theme/app_colors.dart';
 
 class PickupScreen extends StatefulWidget {
@@ -9,20 +11,70 @@ class PickupScreen extends StatefulWidget {
 }
 
 class _PickupScreenState extends State<PickupScreen> {
-  // Controller buat nangkep ketikan user
   final TextEditingController _volumeController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
   @override
   void dispose() {
-    // Jangan lupa di-dispose biar nggak memory leak
     _volumeController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
+  // 🌟 TAMBAHAN 3: Fungsi utama buat proses Request Pickup 🌟
+  void _processPickup(UserProvider userProvider) {
+    String inputText = _volumeController.text.trim();
+
+    if (inputText.isEmpty) {
+      _showSnackBar('Masukkan volume minyak yang mau dijemput!', Colors.red);
+      return;
+    }
+
+    int? volume = int.tryParse(inputText);
+
+    // Validasi angka
+    if (volume == null || volume <= 0) {
+      _showSnackBar('Format angka tidak valid!', Colors.red);
+      return;
+    }
+
+    // Validasi minimal 3 liter
+    if (volume < 3) {
+      _showSnackBar('Minimal penjemputan adalah 3 liter!', Colors.orange.shade800);
+      return;
+    }
+
+    // Validasi maksimal 40 liter
+    if (volume > 40) {
+      _showSnackBar('Maksimal penjemputan adalah 40 liter per order!', Colors.red);
+      return;
+    }
+
+    // Hitung pendapatan (Rp 5.500 per liter)
+    double earnings = volume * 5500.0;
+
+    // Masukin data ke Provider biar UI lain ikut update
+    userProvider.addRecycledOil(volume, earnings);
+
+    _showSnackBar('Order berhasil! Saldo kamu bertambah Rp ${earnings.toInt()}', Colors.green);
+    Navigator.pop(context);
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 🌟 TAMBAHAN 4: Panggil UserProvider 🌟
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -59,7 +111,7 @@ class _PickupScreenState extends State<PickupScreen> {
             const SizedBox(height: 24),
             _buildNotesInput(),
             const SizedBox(height: 40),
-            _buildSubmitButton(),
+            _buildSubmitButton(userProvider), // 🌟 TAMBAHAN 5: Oper data provider ke tombol 🌟
           ],
         ),
       ),
@@ -86,7 +138,7 @@ class _PickupScreenState extends State<PickupScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
               ),
               TextButton(
-                onPressed: () {}, // Nanti buat ganti alamat
+                onPressed: () {}, 
                 child: const Text('Edit', style: TextStyle(color: AppColors.primaryGold)),
               )
             ],
@@ -238,19 +290,13 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
-  // 5. Tombol Submit (Next)
-  Widget _buildSubmitButton() {
+  // 🌟 TAMBAHAN 6: Terima provider, lalu jalankan fungsi _processPickup 🌟
+  Widget _buildSubmitButton(UserProvider userProvider) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: () {
-          // Aksi kalau tombol Next ditekan
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Pickup request submitted!')),
-          );
-          Navigator.pop(context); // Kembali ke Home
-        },
+        onPressed: () => _processPickup(userProvider),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryGold,
           shape: RoundedRectangleBorder(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 🌟 TAMBAHAN 1: Import Provider 🌟
+import '../../providers/user_provider.dart'; // 🌟 TAMBAHAN 2: Import UserProvider 🌟
 import '../../core/theme/app_colors.dart';
-import '../../dummy_data/app_data.dart'; // <-- Import data
 
 class WithdrawalScreen extends StatefulWidget {
   const WithdrawalScreen({Key? key}) : super(key: key);
@@ -18,8 +19,60 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     super.dispose();
   }
 
+  // 🌟 TAMBAHAN 3: Fungsi utama buat proses penarikan saldo 🌟
+  void _processWithdrawal(UserProvider userProvider) {
+    // 1. Ambil teks yang diketik, hilangkan spasi/titik koma, lalu ubah jadi angka
+    String inputText = _amountController.text.trim();
+    
+    if (inputText.isEmpty) {
+      _showSnackBar('Masukkan nominal yang ingin ditarik!', Colors.red);
+      return;
+    }
+
+    double? requestedAmount = double.tryParse(inputText);
+
+    // 2. Cek apakah yang dimasukin beneran angka valid
+    if (requestedAmount == null || requestedAmount <= 0) {
+      _showSnackBar('Format angka tidak valid!', Colors.red);
+      return;
+    }
+
+    // 3. Cek batas minimum penarikan (Rp 10.000)
+    if (requestedAmount < 10000) {
+      _showSnackBar('Minimal penarikan adalah Rp 10.000', Colors.orange.shade800);
+      return;
+    }
+
+    // 4. Cek apakah saldo cukup
+    if (requestedAmount > userProvider.currentBalance) {
+      _showSnackBar('Saldo kamu tidak cukup!', Colors.red);
+      return;
+    }
+
+    // 5. Kalau semua lolos, eksekusi pemotongan saldo lewat Provider
+    userProvider.withdrawBalance(requestedAmount);
+
+    // 6. Kasih notifikasi sukses dan balik ke Beranda
+    _showSnackBar('Berhasil menarik Rp ${requestedAmount.toInt()}!', Colors.green);
+    Navigator.pop(context);
+  }
+
+  // Fungsi utilitas buat nampilin notifikasi biar kodingan rapi
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 🌟 TAMBAHAN 4: Panggil UserProvider biar kita bisa ngecek dan motong saldonya 🌟
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -42,18 +95,19 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildBalanceInfo(),
+            _buildBalanceInfo(userProvider), // 🌟 TAMBAHAN 5: Oper data userProvider 🌟
             const SizedBox(height: 24),
             _buildAmountInput(),
             const SizedBox(height: 40),
-            _buildSubmitButton(),
+            _buildSubmitButton(userProvider), // 🌟 TAMBAHAN 6: Oper data userProvider 🌟
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBalanceInfo() {
+  // 🌟 TAMBAHAN 7: Terima data userProvider 🌟
+  Widget _buildBalanceInfo(UserProvider userProvider) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -71,7 +125,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
           const Text('Available Balance', style: TextStyle(color: AppColors.textGrey, fontSize: 14)),
           const SizedBox(height: 8),
           Text(
-            'Rp ${AppData.currentBalance.toInt()}', // <-- Menggunakan Dummy Data
+            // 🌟 TAMBAHAN 8: Tampilkan saldo dinamis 🌟
+            'Rp ${userProvider.currentBalance.toInt()}',
             style: const TextStyle(color: AppColors.primaryGold, fontSize: 36, fontWeight: FontWeight.bold),
           ),
         ],
@@ -107,15 +162,14 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     );
   }
 
-  Widget _buildSubmitButton() {
+  // 🌟 TAMBAHAN 9: Terima data userProvider 🌟
+  Widget _buildSubmitButton(UserProvider userProvider) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Withdrawal request submitted!')));
-          Navigator.pop(context);
-        },
+        // 🌟 TAMBAHAN 10: Sambungin tombol ke fungsi logika penarikan 🌟
+        onPressed: () => _processWithdrawal(userProvider),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryGold,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

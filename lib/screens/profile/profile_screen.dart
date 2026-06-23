@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- Tambahan buat cek status Firebase
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart'; 
+import '../../providers/user_provider.dart'; 
 import '../../core/theme/app_colors.dart';
-import '../auth/login_screen.dart'; // <-- Pastiin path menuju file LoginScreen lu udah bener
+import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -13,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    // Mesin cek status akun di Firebase secara real-time
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
@@ -21,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryGold,
         elevation: 0,
-        automaticallyImplyLeading: false, // Hilangkan tombol back
+        automaticallyImplyLeading: false, 
         title: const Text(
           'Profile',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
@@ -34,10 +35,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             _buildProfileHeader(user),
             const SizedBox(height: 24),
-            _buildStatsRow(user),
+            _buildStatsRow(context, user), 
             const SizedBox(height: 32),
             _buildMenuSection(context, user),
-            const SizedBox(height: 40), // Padding bawah
+            const SizedBox(height: 40), 
           ],
         ),
       ),
@@ -64,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 radius: 50,
                 backgroundColor: AppColors.lightGold,
                 backgroundImage: NetworkImage(
-                  'https://i.pravatar.cc/150?img=5', // Foto profil default
+                  'https://i.pravatar.cc/150?img=5', 
                 ),
               ),
             ),
@@ -81,14 +82,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 16),
         
-        // Kalau sudah login tampilkan nama asli dari Firebase, kalau belum jadi Guest Account
         Text(
           isLoggedIn ? (user.displayName ?? 'Eco Warrior') : 'Guest Account',
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark),
         ),
         const SizedBox(height: 4),
         
-        // Email dinamis sesuai akun Firebase
         Text(
           isLoggedIn ? (user.email ?? '') : 'Please login to track your journey',
           style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
@@ -110,9 +109,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 2. Baris Statistik (Otomatis jadi 0 kalau belum login)
-  Widget _buildStatsRow(User? user) {
+  // 2. Baris Statistik 
+  Widget _buildStatsRow(BuildContext context, User? user) {
     bool isLoggedIn = user != null;
+    final userProvider = Provider.of<UserProvider>(context, listen: true);
 
     return Row(
       children: [
@@ -127,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 Text(
-                  isLoggedIn ? '142' : '0',
+                  isLoggedIn ? '${userProvider.totalLiters}' : '0',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
                 ),
                 const SizedBox(height: 4),
@@ -151,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 Text(
-                  isLoggedIn ? '28' : '0',
+                  isLoggedIn ? '${userProvider.totalPickups}' : '0',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
                 ),
                 const SizedBox(height: 4),
@@ -167,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 3. Daftar Menu Pengaturan (Menampilkan Login/Register kalau belum login)
+  // 3. Daftar Menu Pengaturan 
   Widget _buildMenuSection(BuildContext context, User? user) {
     bool isLoggedIn = user != null;
 
@@ -183,24 +183,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.person_outline_rounded,
             title: 'Personal Information',
             subtitle: isLoggedIn ? (user.displayName ?? 'No Name') : 'Login to view information',
-            onTap: () {},
+            // 🌟 TAMBAHAN: Sambungin ke pop-up dialog 🌟
+            onTap: () {
+              if (isLoggedIn) _showComingSoonDialog(context, 'Personal Information');
+            },
           ),
           const Divider(height: 1, indent: 56),
           _buildMenuItem(
             icon: Icons.location_on_outlined,
             title: 'Address',
             subtitle: isLoggedIn ? '123 Green Street, Eco City' : 'Login to view address',
-            onTap: () {},
+            // 🌟 TAMBAHAN: Sambungin ke pop-up dialog 🌟
+            onTap: () {
+              if (isLoggedIn) _showComingSoonDialog(context, 'Address Management');
+            },
           ),
           const Divider(height: 1, indent: 56),
           _buildMenuItem(
             icon: Icons.account_balance_wallet_outlined,
             title: 'Account Details',
-            onTap: () {},
+            // 🌟 TAMBAHAN: Sambungin ke pop-up dialog 🌟
+            onTap: () {
+              if (isLoggedIn) _showComingSoonDialog(context, 'Account Details');
+            },
           ),
           const Divider(height: 1, indent: 56),
           
-          // 👇 LOGIKA SWITCH TOMBOL LOGOUT VS LOGIN/REGISTER 👇
           isLoggedIn
               ? _buildMenuItem(
                   icon: Icons.logout_rounded,
@@ -208,7 +216,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   isDestructive: true,
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
-                    setState(() {}); // Refresh halaman biar langsung balik ke mode Guest
+                    setState(() {}); 
                   },
                 )
               : _buildMenuItem(
@@ -220,12 +228,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       context,
                       MaterialPageRoute(builder: (context) => const LoginScreen()),
                     ).then((_) {
-                      setState(() {}); // Refresh halaman pas balik dari screen login
+                      setState(() {}); 
                     });
                   },
                 ),
         ],
       ),
+    );
+  }
+
+  // 🌟 TAMBAHAN BARU: Fungsi buat nampilin Pop-up Dialog keren 🌟
+  void _showComingSoonDialog(BuildContext context, String featureName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Column(
+            children: const [
+              Icon(Icons.build_circle_outlined, size: 50, color: AppColors.primaryGold),
+              SizedBox(height: 16),
+              Text('Coming Soon!', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 20)),
+            ],
+          ),
+          content: Text(
+            'The $featureName feature is currently under development. Stay tuned for the next update!',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textGrey),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGold,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                child: const Text('Got it', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

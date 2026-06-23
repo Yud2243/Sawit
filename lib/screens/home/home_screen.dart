@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- Tambahan buat baca data user
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart'; // 🌟 TAMBAHAN 1: Import package Provider 🌟
+import '../../providers/user_provider.dart'; // 🌟 TAMBAHAN 2: Import file UserProvider (sesuaikan path-nya) 🌟
 import '../../core/theme/app_colors.dart';
-import '../../dummy_data/app_data.dart';
 import '../pickup/pickup_screen.dart';
 import '../history/history_screen.dart';
 import '../withdrawal/withdrawal_screen.dart';
 import '../qr_code/qr_code_screen.dart';
 import '../location/location_screen.dart';
-import '../auth/login_screen.dart'; // <-- Tambahan buat lempar ke login kalau belum punya akses
+import '../auth/login_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
-  // Fungsi Satpam: Ngecek user udah login atau belum sebelum pindah halaman
   void _checkAuthAndNavigate(BuildContext context, Widget targetScreen) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      // Belum login -> Tendang ke halaman Login
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } else {
-      // Udah login -> Lanjut ke halaman tujuan
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => targetScreen),
@@ -34,6 +32,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🌟 TAMBAHAN 3: Panggil UserProvider di awal build method 🌟
+    final userProvider = Provider.of<UserProvider>(context, listen: true);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
@@ -44,15 +45,24 @@ class HomeScreen extends StatelessWidget {
             children: [
               _buildHeader(),
               const SizedBox(height: 24),
-              _buildBalanceCard(),
+              
+              // 🌟 TAMBAHAN 4: Oper data userProvider ke fungsi card saldo 🌟
+              _buildBalanceCard(userProvider),
+              
               const SizedBox(height: 20),
               _buildActionMenus(context),
               const SizedBox(height: 20),
               _buildCollectionPoints(context),
               const SizedBox(height: 20),
-              _buildNextLevelCard(),
+              
+              // 🌟 TAMBAHAN 5: Oper data userProvider ke fungsi progress level 🌟
+              _buildNextLevelCard(userProvider),
+              
               const SizedBox(height: 20),
-              _buildMonthlySummary(),
+              
+              // 🌟 TAMBAHAN 6: Oper data userProvider ke fungsi summary bulanan 🌟
+              _buildMonthlySummary(userProvider),
+              
               const SizedBox(height: 40),
             ],
           ),
@@ -62,7 +72,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    // Ambil data user yang lagi aktif dari Firebase
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Row(
@@ -73,7 +82,6 @@ class HomeScreen extends StatelessWidget {
             CircleAvatar(
               radius: 24,
               backgroundColor: AppColors.lightGold,
-              // Ambil foto dari Firebase kalau ada, kalau kosong pakai dummy
               backgroundImage: NetworkImage(
                 user?.photoURL ?? 'https://i.pravatar.cc/150?img=5',
               ),
@@ -87,7 +95,6 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 14, color: AppColors.textGrey),
                 ),
                 Text(
-                  // Ambil nama dari Firebase, kalau null (belum login) tampilkan 'Guest'
                   user?.displayName ?? 'Guest',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
@@ -103,7 +110,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard() {
+  // 🌟 TAMBAHAN 7: Terima parameter UserProvider di sini 🌟
+  Widget _buildBalanceCard(UserProvider userProvider) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -128,7 +136,8 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'Rp ${AppData.currentBalance.toInt()}',
+                // 🌟 TAMBAHAN 8: Ganti data dummy AppData jadi data live dari Provider 🌟
+                'Rp ${userProvider.currentBalance.toInt()}',
                 style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
               ),
               Column(
@@ -278,9 +287,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNextLevelCard() {
-    final int remaining = AppData.targetLiters - AppData.litersThisMonth;
-    final double progress = AppData.litersThisMonth / AppData.targetLiters;
+  // 🌟 TAMBAHAN 9: Terima parameter UserProvider di sini 🌟
+  Widget _buildNextLevelCard(UserProvider userProvider) {
+    // 🌟 TAMBAHAN 10: Hitung progress & sisa target secara dinamis dari Provider 🌟
+    final int remaining = userProvider.targetLiters - userProvider.litersThisMonth;
+    final double progress = userProvider.litersThisMonth / userProvider.targetLiters;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -312,7 +323,8 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "You've collected ${AppData.litersThisMonth} liters this month",
+            // 🌟 TAMBAHAN 11: Tampilkan total liter bulan ini dari Provider 🌟
+            "You've collected ${userProvider.litersThisMonth} liters this month",
             style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
@@ -320,7 +332,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthlySummary() {
+  // 🌟 TAMBAHAN 12: Terima parameter UserProvider di sini 🌟
+  Widget _buildMonthlySummary(UserProvider userProvider) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -333,7 +346,8 @@ class HomeScreen extends StatelessWidget {
         children: [
           const Text('Monthly Summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
           const SizedBox(height: 16),
-          _buildSummaryRow('Total Collected', '${AppData.litersThisMonth} liters'),
+          // 🌟 TAMBAHAN 13: Ganti teks total liter bulanan dari data Provider 🌟
+          _buildSummaryRow('Total Collected', '${userProvider.litersThisMonth} liters'),
           const Divider(height: 24),
           _buildSummaryRow('Last Month Bonus', 'Rp 25,000'),
         ],

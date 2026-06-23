@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../dummy_data/app_data.dart'; // Ambil nama user dari dummy data
+import 'package:firebase_auth/firebase_auth.dart'; // 🌟 TAMBAHAN: Tarik data user aktif
+import 'package:qr_flutter/qr_flutter.dart'; // 🌟 TAMBAHAN: Library pembuat QR asli
+import '../../core/theme/app_colors.dart';
 
 class QrCodeScreen extends StatelessWidget {
   const QrCodeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // 🌟 LOGIKA BARU: Ambil data user dari Firebase
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String uid = user?.uid ?? 'GUEST-123';
+    final String userName = user?.displayName ?? 'Eco Warrior';
+    
+    // Bikin ID pendek (8 karakter) dari UID Firebase biar rapi di layar
+    final String shortId = uid.length > 8 ? uid.substring(0, 8).toUpperCase() : uid;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -44,16 +53,18 @@ class QrCodeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              // Pakai icon QR Code bawaan Flutter sebagai dummy
-              child: const Icon(
-                Icons.qr_code_2_rounded,
-                size: 200,
-                color: AppColors.textDark,
+              // 🌟 TAMBAHAN: Generate QR Code secara real-time berdasarkan UID
+              child: QrImageView(
+                data: uid, // Ini yang bakal masuk ke mesin scan
+                version: QrVersions.auto,
+                size: 200.0,
+                foregroundColor: AppColors.textDark,
+                errorCorrectionLevel: QrErrorCorrectLevel.M, // Toleransi kalau layar agak kotor
               ),
             ),
             const SizedBox(height: 32),
             Text(
-              AppData.userName,
+              userName, // Nama asli dari database
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             const SizedBox(height: 8),
@@ -63,9 +74,9 @@ class QrCodeScreen extends StatelessWidget {
                 color: AppColors.lightGold,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
-                'ID: SAW-12345678',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
+              child: Text(
+                'ID: SAW-$shortId', // ID otomatis ngikutin kombinasi akun
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
               ),
             ),
           ],
