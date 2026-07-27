@@ -8,6 +8,17 @@ class UserProvider with ChangeNotifier {
   int _litersThisMonth = 42;
   int _targetLiters = 100;
 
+  // 🌟 TAMBAHAN BARU: Variabel Alamat (Pakai underscore biar seragam)
+  String _street = '123 Green Street';
+  String _city = 'Eco City';
+  String _postalCode = '80361';
+
+  // 🌟 TAMBAHAN BARU (ACCOUNT DETAILS): Variabel Rekening / E-Wallet 🌟
+  // (Letaknya di bawah variabel alamat)
+  String _bankName = 'GoPay';
+  String _accountNumber = '081234567890';
+  String _accountName = 'Eco Warrior';
+
   final List<TransactionModel> _transactions = [];
 
   double get currentBalance => _currentBalance;
@@ -16,14 +27,42 @@ class UserProvider with ChangeNotifier {
   int get litersThisMonth => _litersThisMonth;
   int get targetLiters => _targetLiters;
   
+  // 🌟 TAMBAHAN BARU: Getter Alamat
+  String get street => _street;
+  String get city => _city;
+  String get postalCode => _postalCode;
+  
+  // 🌟 TAMBAHAN BARU (ACCOUNT DETAILS): Getter Rekening 🌟
+  // (Letaknya di bawah getter alamat)
+  String get bankName => _bankName;
+  String get accountNumber => _accountNumber;
+  String get accountName => _accountName;
+  
   List<TransactionModel> get transactions => _transactions;
+
+  // 🌟 TAMBAHAN BARU: Fungsi untuk update alamat
+  void updateAddress(String newStreet, String newCity, String newPostal) {
+    _street = newStreet;
+    _city = newCity;
+    _postalCode = newPostal;
+    notifyListeners(); // Refresh layar
+  }
+
+  // 🌟 TAMBAHAN BARU (ACCOUNT DETAILS): Fungsi untuk update Rekening 🌟
+  // (Letaknya di bawah fungsi update alamat)
+  void updateAccount(String bank, String number, String name) {
+    _bankName = bank;
+    _accountNumber = number;
+    _accountName = name;
+    notifyListeners(); // Refresh layar
+  }
 
   void withdrawBalance(double amount) {
     if (_currentBalance >= amount) {
       _currentBalance -= amount;
       
       _transactions.insert(0, TransactionModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(), // 🌟 INI YANG BIKIN MERAH TADI 🌟
+        id: DateTime.now().millisecondsSinceEpoch.toString(), 
         title: 'Withdraw Balance',
         type: 'withdrawal',
         amount: amount,
@@ -42,7 +81,7 @@ class UserProvider with ChangeNotifier {
     _totalPickups += 1;
 
     _transactions.insert(0, TransactionModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(), // 🌟 INI JUGA 🌟
+      id: DateTime.now().millisecondsSinceEpoch.toString(), 
       title: 'UCO Pickup ($liters Liters)',
       type: 'deposit',
       amount: earnings,

@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart'; 
 import '../../core/theme/app_colors.dart';
 import '../auth/login_screen.dart';
+import 'personal_info_screen.dart';
+import 'address_screen.dart';
+import 'account_details_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -170,6 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // 3. Daftar Menu Pengaturan 
   Widget _buildMenuSection(BuildContext context, User? user) {
     bool isLoggedIn = user != null;
+    final userProvider = Provider.of<UserProvider>(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -183,28 +187,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.person_outline_rounded,
             title: 'Personal Information',
             subtitle: isLoggedIn ? (user.displayName ?? 'No Name') : 'Login to view information',
-            // 🌟 TAMBAHAN: Sambungin ke pop-up dialog 🌟
+            // 🌟 KODE BARU: Langsung pindah halaman 🌟
             onTap: () {
-              if (isLoggedIn) _showComingSoonDialog(context, 'Personal Information');
+              if (isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PersonalInfoScreen()),
+                );
+              }
             },
           ),
           const Divider(height: 1, indent: 56),
-          _buildMenuItem(
+         _buildMenuItem(
             icon: Icons.location_on_outlined,
             title: 'Address',
-            subtitle: isLoggedIn ? '123 Green Street, Eco City' : 'Login to view address',
-            // 🌟 TAMBAHAN: Sambungin ke pop-up dialog 🌟
+            // 🌟 KODE BARU: Mengambil teks jalan dan kota dari UserProvider
+            subtitle: isLoggedIn ? '${userProvider.street}, ${userProvider.city}' : 'Login to view address',
             onTap: () {
-              if (isLoggedIn) _showComingSoonDialog(context, 'Address Management');
+              if (isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddressScreen()),
+                );
+              }
             },
           ),
-          const Divider(height: 1, indent: 56),
-          _buildMenuItem(
+         _buildMenuItem(
             icon: Icons.account_balance_wallet_outlined,
             title: 'Account Details',
-            // 🌟 TAMBAHAN: Sambungin ke pop-up dialog 🌟
+            // 🌟 KODE BARU: Nampilin nama bank dan sensor nomor rekening
+            subtitle: isLoggedIn 
+                ? '${userProvider.bankName} - ${userProvider.accountNumber.replaceAll(RegExp(r'.(?=.{4})'), '*')}' 
+                : 'Login to view account',
             onTap: () {
-              if (isLoggedIn) _showComingSoonDialog(context, 'Account Details');
+              if (isLoggedIn) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AccountDetailsScreen()),
+                );
+              }
             },
           ),
           const Divider(height: 1, indent: 56),
