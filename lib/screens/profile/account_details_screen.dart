@@ -41,7 +41,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         backgroundColor: AppColors.primaryGold,
         elevation: 0,
         title: const Text(
-          'Account Details',
+          'Detail Akun',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -56,14 +56,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Where should we send your earnings?',
+              'Ke mana kami kirimkan pendapatan Anda?',
               style: TextStyle(fontSize: 16, color: AppColors.textGrey),
             ),
             const SizedBox(height: 24),
             
             // 1. Bank / E-Wallet Name
             _buildTextField(
-              label: 'Bank / E-Wallet Name (e.g., BCA, GoPay, OVO)', 
+              label: 'Nama Bank / E-Wallet (misal: BCA, GoPay, OVO)', 
               controller: _bankController, 
               icon: Icons.account_balance_outlined,
             ),
@@ -71,7 +71,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             
             // 2. Account Number
             _buildTextField(
-              label: 'Account / Phone Number', 
+              label: 'Nomor Rekening / Telepon', 
               controller: _numberController, 
               icon: Icons.numbers_rounded,
               keyboardType: TextInputType.number,
@@ -80,7 +80,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             
             // 3. Account Holder Name
             _buildTextField(
-              label: 'Account Holder Name', 
+              label: 'Nama Pemilik Akun', 
               controller: _nameController, 
               icon: Icons.person_outline,
             ),
@@ -101,7 +101,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Account details updated! 💳'),
+                    content: Text('Detail akun berhasil diperbarui! 💳'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -115,7 +115,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   elevation: 2,
                 ),
                 child: const Text(
-                  'Save Details',
+                  'Simpan Detail',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

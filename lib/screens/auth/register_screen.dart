@@ -115,12 +115,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Create Account',
+                  'Buat Akun',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Join us and start making an impact!',
+                  'Bergabunglah dan mulailah membuat dampak!',
                   style: TextStyle(fontSize: 14, color: AppColors.textGrey),
                 ),
                 const SizedBox(height: 32),
@@ -128,7 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // 1. Kolom Full Name
                 _buildTextField(
                   controller: _nameController,
-                  label: 'Full Name',
+                  label: 'Nama Lengkap',
                   icon: Icons.person_outline_rounded,
                 ),
                 const SizedBox(height: 16),
@@ -136,7 +136,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // 2. Kolom Username
                 _buildTextField(
                   controller: _usernameController,
-                  label: 'Username',
+                  label: 'Nama Pengguna',
                   icon: Icons.alternate_email_rounded,
                 ),
                 const SizedBox(height: 16),
@@ -169,7 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // 5. Kolom Confirm Password + Icon Mata
                 _buildTextField(
                   controller: _confirmPasswordController,
-                  label: 'Confirm Password',
+                  label: 'Konfirmasi Kata Sandi',
                   icon: Icons.lock_clock_outlined,
                   obscureText: _obscureConfirmPassword,
                   suffixIcon: IconButton(
@@ -198,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
                       : const Text(
-                          'Register',
+                          'Daftar',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                 ),

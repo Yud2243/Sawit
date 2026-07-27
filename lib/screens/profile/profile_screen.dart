@@ -27,7 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         automaticallyImplyLeading: false, 
         title: const Text(
-          'Profile',
+          'Profil',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -86,13 +86,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 16),
         
         Text(
-          isLoggedIn ? (user.displayName ?? 'Eco Warrior') : 'Guest Account',
+          isLoggedIn ? (user.displayName ?? 'Eco Warrior') : 'Akun Tamu',
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark),
         ),
         const SizedBox(height: 4),
         
         Text(
-          isLoggedIn ? (user.email ?? '') : 'Please login to track your journey',
+          isLoggedIn ? (user.email ?? '') : 'Silakan masuk untuk melacak perjalanan Anda',
           style: const TextStyle(fontSize: 14, color: AppColors.textGrey),
         ),
         const SizedBox(height: 12),
@@ -104,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            isLoggedIn ? 'Eco Warrior Level 3' : 'Level 0 (Guest)',
+            isLoggedIn ? 'Eco Warrior Level 3' : 'Level 0 (Tamu)',
             style: const TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
@@ -135,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Total Liters',
+                  'Total Liter',
                   style: TextStyle(color: AppColors.textGrey, fontSize: 12),
                 ),
               ],
@@ -159,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Pickups',
+                  'Penjemputan',
                   style: TextStyle(color: AppColors.textGrey, fontSize: 12),
                 ),
               ],
@@ -185,8 +185,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           _buildMenuItem(
             icon: Icons.person_outline_rounded,
-            title: 'Personal Information',
-            subtitle: isLoggedIn ? (user.displayName ?? 'No Name') : 'Login to view information',
+            title: 'Informasi Pribadi',
+            subtitle: isLoggedIn ? (user.displayName ?? 'Tidak Ada Nama') : 'Masuk untuk melihat informasi',
             // 🌟 KODE BARU: Langsung pindah halaman 🌟
             onTap: () {
               if (isLoggedIn) {
@@ -200,9 +200,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Divider(height: 1, indent: 56),
          _buildMenuItem(
             icon: Icons.location_on_outlined,
-            title: 'Address',
+            title: 'Alamat',
             // 🌟 KODE BARU: Mengambil teks jalan dan kota dari UserProvider
-            subtitle: isLoggedIn ? '${userProvider.street}, ${userProvider.city}' : 'Login to view address',
+            subtitle: isLoggedIn ? '${userProvider.street}, ${userProvider.city}' : 'Masuk untuk melihat alamat',
             onTap: () {
               if (isLoggedIn) {
                 Navigator.push(
@@ -214,11 +214,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
          _buildMenuItem(
             icon: Icons.account_balance_wallet_outlined,
-            title: 'Account Details',
+            title: 'Detail Akun',
             // 🌟 KODE BARU: Nampilin nama bank dan sensor nomor rekening
             subtitle: isLoggedIn 
                 ? '${userProvider.bankName} - ${userProvider.accountNumber.replaceAll(RegExp(r'.(?=.{4})'), '*')}' 
-                : 'Login to view account',
+                : 'Masuk untuk melihat akun',
             onTap: () {
               if (isLoggedIn) {
                 Navigator.push(
@@ -233,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           isLoggedIn
               ? _buildMenuItem(
                   icon: Icons.logout_rounded,
-                  title: 'Logout Account',
+                  title: 'Keluar',
                   isDestructive: true,
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
@@ -242,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 )
               : _buildMenuItem(
                   icon: Icons.login_rounded,
-                  title: 'Login / Register',
+                  title: 'Masuk / Daftar',
                   isLoginButton: true,
                   onTap: () {
                     Navigator.push(
@@ -269,11 +269,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: const [
               Icon(Icons.build_circle_outlined, size: 50, color: AppColors.primaryGold),
               SizedBox(height: 16),
-              Text('Coming Soon!', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 20)),
+              Text('Segera Hadir!', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 20)),
             ],
           ),
           content: Text(
-            'The $featureName feature is currently under development. Stay tuned for the next update!',
+            'Fitur $featureName sedang dalam pengembangan. Nantikan pembaruan berikutnya!',
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.textGrey),
           ),
@@ -286,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
-                child: const Text('Got it', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text('Oke', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

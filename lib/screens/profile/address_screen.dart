@@ -19,10 +19,11 @@ class _AddressScreenState extends State<AddressScreen> {
   @override
   void initState() {
     super.initState();
-    // Isi dengan dummy text dulu
-    _streetController = TextEditingController(text: '123 Green Street');
-    _cityController = TextEditingController(text: 'Eco City');
-    _postalController = TextEditingController(text: '80361');
+    // Ambil data alamat dari UserProvider (yang sudah di-load dari Firestore)
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    _streetController = TextEditingController(text: userProvider.street);
+    _cityController = TextEditingController(text: userProvider.city);
+    _postalController = TextEditingController(text: userProvider.postalCode);
   }
 
   @override
@@ -41,7 +42,7 @@ class _AddressScreenState extends State<AddressScreen> {
         backgroundColor: AppColors.primaryGold,
         elevation: 0,
         title: const Text(
-          'Address Management',
+          'Atur Alamat',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -56,14 +57,14 @@ class _AddressScreenState extends State<AddressScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Set your pickup location',
+              'Atur lokasi penjemputan Anda',
               style: TextStyle(fontSize: 16, color: AppColors.textGrey),
             ),
             const SizedBox(height: 24),
             
             // 1. Kolom Nama Jalan
             _buildTextField(
-              label: 'Street Address', 
+              label: 'Alamat Jalan', 
               controller: _streetController, 
               icon: Icons.location_on_outlined,
               maxLines: 2, // Biar kotaknya agak lebar ke bawah untuk nulis alamat panjang
@@ -72,7 +73,7 @@ class _AddressScreenState extends State<AddressScreen> {
             
             // 2. Kolom Kota
             _buildTextField(
-              label: 'City / District', 
+              label: 'Kota / Kecamatan', 
               controller: _cityController, 
               icon: Icons.location_city_outlined,
             ),
@@ -80,7 +81,7 @@ class _AddressScreenState extends State<AddressScreen> {
             
             // 3. Kolom Kode Pos
             _buildTextField(
-              label: 'Postal Code', 
+              label: 'Kode Pos', 
               controller: _postalController, 
               icon: Icons.markunread_mailbox_outlined,
               keyboardType: TextInputType.number,
@@ -102,7 +103,7 @@ class _AddressScreenState extends State<AddressScreen> {
 
                ScaffoldMessenger.of(context).showSnackBar(
                  const SnackBar(
-                   content: Text('Address saved successfully! 🏡'),
+                   content: Text('Alamat berhasil disimpan! 🏡'),
                    backgroundColor: Colors.green,
                  ),
                );
@@ -116,7 +117,7 @@ class _AddressScreenState extends State<AddressScreen> {
                   elevation: 2,
                 ),
                 child: const Text(
-                  'Save Address',
+                  'Simpan Alamat',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

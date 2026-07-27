@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- Tambahan buat baca status login
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_colors.dart';
-import '../auth/login_screen.dart'; // <-- Tambahan buat manggil layar login (sesuaikan path-nya)
+import '../auth/login_screen.dart';
 
 class ImpactScreen extends StatefulWidget {
   const ImpactScreen({Key? key}) : super(key: key);
@@ -13,17 +13,15 @@ class ImpactScreen extends StatefulWidget {
 class _ImpactScreenState extends State<ImpactScreen> {
   @override
   Widget build(BuildContext context) {
-    // Mesin ngecek: "Ada user yang lagi login nggak nih?"
     final User? user = FirebaseAuth.instance.currentUser;
 
-    // 🔴 KALAU BELUM LOGIN: Tampilin halaman peringatan gembok
     if (user == null) {
       return Scaffold(
         backgroundColor: AppColors.backgroundLight,
         appBar: AppBar(
           backgroundColor: AppColors.primaryGold,
           elevation: 0,
-          title: const Text('Your Impact', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: const Text('Dampak Anda', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           centerTitle: true,
           automaticallyImplyLeading: false,
         ),
@@ -36,12 +34,12 @@ class _ImpactScreenState extends State<ImpactScreen> {
                 const Icon(Icons.lock_outline_rounded, size: 80, color: AppColors.primaryGold),
                 const SizedBox(height: 16),
                 const Text(
-                  'Access Restricted',
+                  'Akses Terbatas',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Please login to see your environmental impact and achievements.',
+                  'Silakan masuk untuk melihat dampak lingkungan dan pencapaian Anda.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.textGrey, fontSize: 14),
                 ),
@@ -50,12 +48,11 @@ class _ImpactScreenState extends State<ImpactScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Lempar ke halaman Login, kalau udah beres, refresh layarnya otomatis
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const LoginScreen()),
                       ).then((_) {
-                        setState(() {}); // <-- Trik pinter biar layar otomatis kereload
+                        setState(() {});
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -63,7 +60,7 @@ class _ImpactScreenState extends State<ImpactScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: const Text('Login to Continue', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: const Text('Masuk untuk Melanjutkan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],
@@ -73,7 +70,6 @@ class _ImpactScreenState extends State<ImpactScreen> {
       );
     }
 
-    // 🟢 KALAU UDAH LOGIN: Tampilin halaman Impact asli lu
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
@@ -84,11 +80,11 @@ class _ImpactScreenState extends State<ImpactScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Your Impact',
+              'Dampak Anda',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
             ),
             Text(
-              "See how you're helping the planet",
+              'Lihat bagaimana Anda membantu bumi',
               style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
@@ -102,14 +98,14 @@ class _ImpactScreenState extends State<ImpactScreen> {
             _buildTopImpactCard(),
             const SizedBox(height: 24),
             const Text(
-              'Environmental Impact',
+              'Dampak Lingkungan',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             const SizedBox(height: 16),
             _buildImpactList(),
             const SizedBox(height: 24),
             const Text(
-              'Achievements',
+              'Pencapaian',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
             ),
             const SizedBox(height: 16),
@@ -122,8 +118,6 @@ class _ImpactScreenState extends State<ImpactScreen> {
       ),
     );
   }
-
-  // --- WIDGET UI ASLI LU DI BAWAH SINI ---
 
   Widget _buildTopImpactCard() {
     return Container(
@@ -157,7 +151,7 @@ class _ImpactScreenState extends State<ImpactScreen> {
             style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
           ),
           const Text(
-            'Total Liters Recycled',
+            'Total Liter Daur Ulang',
             style: TextStyle(fontSize: 14, color: AppColors.textGrey, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 16),
@@ -173,7 +167,7 @@ class _ImpactScreenState extends State<ImpactScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "Amazing work! You're in the top 15% of eco warriors this month",
+                    'Kerja bagus! Anda termasuk 15% pejuang lingkungan terbaik bulan ini',
                     style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -191,25 +185,25 @@ class _ImpactScreenState extends State<ImpactScreen> {
         _buildImpactItem(
           icon: Icons.water_drop_rounded,
           iconColor: Colors.blue,
-          value: '142,000 liters',
-          title: 'Water Saved',
-          subtitle: 'Clean water protected from contamination',
+          value: '142.000 liter',
+          title: 'Air yang Dihemat',
+          subtitle: 'Air bersih terlindungi dari kontaminasi',
         ),
         const SizedBox(height: 12),
         _buildImpactItem(
           icon: Icons.park_rounded,
           iconColor: Colors.green,
-          value: '28 trees',
-          title: 'Equivalent Trees Planted',
-          subtitle: 'Environmental impact of your contribution',
+          value: '28 pohon',
+          title: 'Setara Pohon Ditanam',
+          subtitle: 'Dampak lingkungan dari kontribusi Anda',
         ),
         const SizedBox(height: 12),
         _buildImpactItem(
           icon: Icons.bolt_rounded,
           iconColor: Colors.amber,
           value: '85 kWh',
-          title: 'Biodiesel Energy',
-          subtitle: 'Renewable energy generated',
+          title: 'Energi Biodiesel',
+          subtitle: 'Energi terbarukan yang dihasilkan',
         ),
       ],
     );
@@ -261,9 +255,9 @@ class _ImpactScreenState extends State<ImpactScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildBadgeItem(icon: Icons.water_drop_outlined, title: 'First Drip', isEarned: true),
-        _buildBadgeItem(icon: Icons.psychology_alt_outlined, title: 'Eco Starter', isEarned: true),
-        _buildBadgeItem(icon: Icons.workspace_premium_outlined, title: '100 Liters', isEarned: true),
+        _buildBadgeItem(icon: Icons.water_drop_outlined, title: 'Tetes Pertama', isEarned: true),
+        _buildBadgeItem(icon: Icons.psychology_alt_outlined, title: 'Pejuang Lingkungan', isEarned: true),
+        _buildBadgeItem(icon: Icons.workspace_premium_outlined, title: '100 Liter', isEarned: true),
         _buildBadgeItem(icon: Icons.star_border_rounded, title: 'Top 10%', isEarned: false),
       ],
     );
@@ -301,7 +295,7 @@ class _ImpactScreenState extends State<ImpactScreen> {
     return Column(
       children: [
         const Text(
-          'Proud of your impact? Share it!',
+          'Bangga dengan dampak Anda? Bagikan!',
           style: TextStyle(color: AppColors.textGrey, fontSize: 14),
         ),
         const SizedBox(height: 12),
@@ -309,10 +303,18 @@ class _ImpactScreenState extends State<ImpactScreen> {
           width: double.infinity,
           height: 54,
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Fitur bagikan akan segera hadir!'),
+                  backgroundColor: AppColors.primaryGold,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
             icon: const Icon(Icons.share_rounded, color: AppColors.primaryGold),
             label: const Text(
-              'Share on Social Media',
+              'Bagikan di Media Sosial',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryGold),
             ),
             style: OutlinedButton.styleFrom(

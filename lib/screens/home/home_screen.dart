@@ -91,11 +91,11 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Welcome back,',
+                  'Selamat datang kembali,',
                   style: TextStyle(fontSize: 14, color: AppColors.textGrey),
                 ),
                 Text(
-                  user?.displayName ?? 'Guest',
+                  user?.displayName ?? 'Tamu',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
               ],
@@ -129,7 +129,7 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Your Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text('Saldo Anda', style: TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -162,7 +162,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: _MenuButton(
                 icon: Icons.account_balance_wallet_outlined, 
-                title: 'Withdraw', 
+title: 'Tarik Saldo',
                 onTap: () => _checkAuthAndNavigate(context, const WithdrawalScreen()),
               ),
             ),
@@ -170,7 +170,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: _MenuButton(
                 icon: Icons.history_rounded, 
-                title: 'History', 
+title: 'Riwayat',
                 onTap: () => _checkAuthAndNavigate(context, const HistoryScreen()),
               ),
             ),
@@ -182,7 +182,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: _MenuButton(
                 icon: Icons.local_shipping_outlined, 
-                title: 'Pickup', 
+title: 'Penjemputan',
                 onTap: () => _checkAuthAndNavigate(context, const PickupScreen()),
               ),
             ),
@@ -190,7 +190,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: _MenuButton(
                 icon: Icons.qr_code_scanner_rounded, 
-                title: 'QR Code', 
+title: 'Kode QR',
                 onTap: () => _checkAuthAndNavigate(context, const QrCodeScreen()),
               ),
             ),
@@ -216,14 +216,14 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Nearby Collection Points', 
+const Text('Titik Koleksi Terdekat',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)
               ),
               GestureDetector(
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const LocationScreen()));
                 },
-                child: const Text('See All', 
+child: const Text('Lihat Semua',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primaryGold)
                 ),
               ),
@@ -305,12 +305,12 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Text('Next Level', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+Text('Level Selanjutnya', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               Icon(Icons.water_drop, color: Colors.white, size: 20),
             ],
           ),
           const SizedBox(height: 4),
-          Text('$remaining liters to go!', style: const TextStyle(color: Colors.white70, fontSize: 14)),
+Text('$remaining liter lagi!', style: const TextStyle(color: Colors.white70, fontSize: 14)),
           const SizedBox(height: 16),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
@@ -324,7 +324,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             // 🌟 TAMBAHAN 11: Tampilkan total liter bulan ini dari Provider 🌟
-            "You've collected ${userProvider.litersThisMonth} liters this month",
+"Anda telah mengumpulkan ${userProvider.litersThisMonth} liter bulan ini",
             style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
@@ -344,12 +344,12 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Monthly Summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+const Text('Ringkasan Bulanan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
           const SizedBox(height: 16),
           // 🌟 TAMBAHAN 13: Ganti teks total liter bulanan dari data Provider 🌟
-          _buildSummaryRow('Total Collected', '${userProvider.litersThisMonth} liters'),
+_buildSummaryRow('Total Terkumpul', '${userProvider.litersThisMonth} liter'),
           const Divider(height: 24),
-          _buildSummaryRow('Last Month Bonus', 'Rp 25,000'),
+_buildSummaryRow('Bonus Bulan Lalu', 'Rp 25,000'),
         ],
       ),
     );

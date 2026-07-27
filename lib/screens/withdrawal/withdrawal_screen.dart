@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // 🌟 TAMBAHAN 1: Import Provider 🌟
-import '../../providers/user_provider.dart'; // 🌟 TAMBAHAN 2: Import UserProvider 🌟
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../profile/account_details_screen.dart';
 
 class WithdrawalScreen extends StatefulWidget {
   const WithdrawalScreen({Key? key}) : super(key: key);
@@ -12,6 +13,7 @@ class WithdrawalScreen extends StatefulWidget {
 
 class _WithdrawalScreenState extends State<WithdrawalScreen> {
   final TextEditingController _amountController = TextEditingController();
+  bool _isProcessing = false;
 
   @override
   void dispose() {
@@ -19,9 +21,10 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     super.dispose();
   }
 
-  // 🌟 TAMBAHAN 3: Fungsi utama buat proses penarikan saldo 🌟
-  void _processWithdrawal(UserProvider userProvider) {
-    // 1. Ambil teks yang diketik, hilangkan spasi/titik koma, lalu ubah jadi angka
+  Future<void> _processWithdrawal(UserProvider userProvider) async {
+    // Cegah double-click / spam tombol
+    if (_isProcessing) return;
+
     String inputText = _amountController.text.trim();
     
     if (inputText.isEmpty) {
@@ -31,34 +34,35 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
     double? requestedAmount = double.tryParse(inputText);
 
-    // 2. Cek apakah yang dimasukin beneran angka valid
     if (requestedAmount == null || requestedAmount <= 0) {
       _showSnackBar('Format angka tidak valid!', Colors.red);
       return;
     }
 
-    // 3. Cek batas minimum penarikan (Rp 10.000)
     if (requestedAmount < 10000) {
       _showSnackBar('Minimal penarikan adalah Rp 10.000', Colors.orange.shade800);
       return;
     }
 
-    // 4. Cek apakah saldo cukup
     if (requestedAmount > userProvider.currentBalance) {
       _showSnackBar('Saldo kamu tidak cukup!', Colors.red);
       return;
     }
 
-    // 5. Kalau semua lolos, eksekusi pemotongan saldo lewat Provider
-    userProvider.withdrawBalance(requestedAmount);
+    // Set loading
+    setState(() => _isProcessing = true);
 
-    // 6. Kasih notifikasi sukses dan balik ke Beranda
-    _showSnackBar('Berhasil menarik Rp ${requestedAmount.toInt()}!', Colors.green);
-    Navigator.pop(context);
+    // Tunggu proses Firestore selesai (dengan timeout agar tidak freeze)
+    await userProvider.withdrawBalance(requestedAmount);
+
+    if (context.mounted) {
+      _showSnackBar('Berhasil menarik Rp ${requestedAmount.toInt()}!', Colors.green);
+      Navigator.pop(context);
+    }
   }
 
-  // Fungsi utilitas buat nampilin notifikasi biar kodingan rapi
   void _showSnackBar(String message, Color color) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -70,7 +74,6 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 🌟 TAMBAHAN 4: Panggil UserProvider biar kita bisa ngecek dan motong saldonya 🌟
     final userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
@@ -85,8 +88,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            Text('Withdraw Balance', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-            Text('Cash out your eco-rewards', style: TextStyle(color: Colors.white70, fontSize: 12)),
+            Text('Tarik Saldo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('Cairkan hadiah ramah lingkungan Anda', style: TextStyle(color: Colors.white70, fontSize: 12)),
           ],
         ),
       ),
@@ -95,18 +98,19 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildBalanceInfo(userProvider), // 🌟 TAMBAHAN 5: Oper data userProvider 🌟
+            _buildBalanceInfo(userProvider),
+            const SizedBox(height: 20),
+            _buildAccountInfo(userProvider),
             const SizedBox(height: 24),
             _buildAmountInput(),
             const SizedBox(height: 40),
-            _buildSubmitButton(userProvider), // 🌟 TAMBAHAN 6: Oper data userProvider 🌟
+            _buildSubmitButton(userProvider),
           ],
         ),
       ),
     );
   }
 
-  // 🌟 TAMBAHAN 7: Terima data userProvider 🌟
   Widget _buildBalanceInfo(UserProvider userProvider) {
     return Container(
       width: double.infinity,
@@ -122,12 +126,88 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text('Available Balance', style: TextStyle(color: AppColors.textGrey, fontSize: 14)),
+          const Text('Saldo Tersedia', style: TextStyle(color: AppColors.textGrey, fontSize: 14)),
           const SizedBox(height: 8),
           Text(
-            // 🌟 TAMBAHAN 8: Tampilkan saldo dinamis 🌟
             'Rp ${userProvider.currentBalance.toInt()}',
             style: const TextStyle(color: AppColors.primaryGold, fontSize: 36, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountInfo(UserProvider userProvider) {
+    String accountDisplay;
+    bool hasAccount = userProvider.bankName.isNotEmpty && userProvider.accountNumber.isNotEmpty;
+
+    if (hasAccount) {
+      String maskedNumber = userProvider.accountNumber.replaceAll(RegExp(r'.(?=.{4})'), '*');
+      accountDisplay = '${userProvider.bankName} - $maskedNumber';
+    } else {
+      accountDisplay = 'Belum ada rekening. Tap "Ubah" untuk menambahkan.';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Tujuan Penarikan',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AccountDetailsScreen()),
+                  );
+                },
+                child: const Text('Ubah', style: TextStyle(color: AppColors.primaryGold)),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.lightGold.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primaryGold),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hasAccount ? (userProvider.accountName.isNotEmpty ? userProvider.accountName : userProvider.bankName) : 'Belum diatur',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        accountDisplay,
+                        style: TextStyle(
+                          color: hasAccount ? AppColors.textGrey : Colors.orange,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -138,7 +218,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Withdrawal Amount', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+        const Text('Jumlah Penarikan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
         const SizedBox(height: 12),
         TextField(
           controller: _amountController,
@@ -157,25 +237,32 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        const Text('Minimum withdrawal is Rp 10,000', style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
+        const Text('Minimal penarikan adalah Rp 10.000', style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
       ],
     );
   }
 
-  // 🌟 TAMBAHAN 9: Terima data userProvider 🌟
   Widget _buildSubmitButton(UserProvider userProvider) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        // 🌟 TAMBAHAN 10: Sambungin tombol ke fungsi logika penarikan 🌟
-        onPressed: () => _processWithdrawal(userProvider),
+        onPressed: _isProcessing ? null : () => _processWithdrawal(userProvider),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryGold,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
         ),
-        child: const Text('Withdraw Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+        child: _isProcessing
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              )
+            : const Text(
+                'Tarik Sekarang',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
       ),
     );
   }

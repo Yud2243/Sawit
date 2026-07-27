@@ -49,11 +49,11 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Transaction History',
+              'Riwayat Transaksi',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
             ),
             Text(
-              'View your activity',
+              'Lihat aktivitas Anda',
               style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
@@ -82,8 +82,8 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
                 tabs: const [
-                  Tab(text: 'Deposit'),
-                  Tab(text: 'Withdrawal'),
+                  Tab(text: 'Setoran'),
+                  Tab(text: 'Penarikan'),
                 ],
               ),
             ),
@@ -108,7 +108,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   Widget _buildTransactionList(List<TransactionModel> transactions) {
     if (transactions.isEmpty) {
       return const Center(
-        child: Text('No transaction yet', style: TextStyle(color: AppColors.textGrey)),
+        child: Text('Belum ada transaksi', style: TextStyle(color: AppColors.textGrey)),
       );
     }
 

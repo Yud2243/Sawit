@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // 🌟 TAMBAHAN 1: Import Provider 🌟
-import '../../providers/user_provider.dart'; // 🌟 TAMBAHAN 2: Import UserProvider 🌟
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../profile/address_screen.dart';
 
 class PickupScreen extends StatefulWidget {
   const PickupScreen({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class PickupScreen extends StatefulWidget {
 class _PickupScreenState extends State<PickupScreen> {
   final TextEditingController _volumeController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  bool _isProcessing = false;
 
   @override
   void dispose() {
@@ -21,8 +23,10 @@ class _PickupScreenState extends State<PickupScreen> {
     super.dispose();
   }
 
-  // 🌟 TAMBAHAN 3: Fungsi utama buat proses Request Pickup 🌟
-  void _processPickup(UserProvider userProvider) {
+  Future<void> _processPickup(UserProvider userProvider) async {
+    // Cegah double-click / spam tombol
+    if (_isProcessing) return;
+
     String inputText = _volumeController.text.trim();
 
     if (inputText.isEmpty) {
@@ -32,35 +36,37 @@ class _PickupScreenState extends State<PickupScreen> {
 
     int? volume = int.tryParse(inputText);
 
-    // Validasi angka
     if (volume == null || volume <= 0) {
       _showSnackBar('Format angka tidak valid!', Colors.red);
       return;
     }
 
-    // Validasi minimal 3 liter
     if (volume < 3) {
       _showSnackBar('Minimal penjemputan adalah 3 liter!', Colors.orange.shade800);
       return;
     }
 
-    // Validasi maksimal 40 liter
     if (volume > 40) {
       _showSnackBar('Maksimal penjemputan adalah 40 liter per order!', Colors.red);
       return;
     }
 
-    // Hitung pendapatan (Rp 5.500 per liter)
     double earnings = volume * 5500.0;
 
-    // Masukin data ke Provider biar UI lain ikut update
-    userProvider.addRecycledOil(volume, earnings);
+    // Set loading
+    setState(() => _isProcessing = true);
 
-    _showSnackBar('Order berhasil! Saldo kamu bertambah Rp ${earnings.toInt()}', Colors.green);
-    Navigator.pop(context);
+    // Tunggu proses Firestore selesai (dengan timeout agar tidak freeze)
+    await userProvider.addRecycledOil(volume, earnings);
+
+    if (context.mounted) {
+      _showSnackBar('Order berhasil! Saldo kamu bertambah Rp ${earnings.toInt()}', Colors.green);
+      Navigator.pop(context);
+    }
   }
 
   void _showSnackBar(String message, Color color) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -72,7 +78,6 @@ class _PickupScreenState extends State<PickupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 🌟 TAMBAHAN 4: Panggil UserProvider 🌟
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     return Scaffold(
@@ -88,11 +93,11 @@ class _PickupScreenState extends State<PickupScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Request Pickup',
+              'Jadwalkan Penjemputan',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
             ),
             Text(
-              'Schedule your UCO collection',
+              'Jadwalkan pengumpulan minyak jelantah Anda',
               style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
@@ -111,71 +116,88 @@ class _PickupScreenState extends State<PickupScreen> {
             const SizedBox(height: 24),
             _buildNotesInput(),
             const SizedBox(height: 40),
-            _buildSubmitButton(userProvider), // 🌟 TAMBAHAN 5: Oper data provider ke tombol 🌟
+            _buildSubmitButton(userProvider),
           ],
         ),
       ),
     );
   }
 
-  // 1. Card Alamat (Address)
   Widget _buildAddressCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        String fullAddress = '';
+        if (userProvider.street.isNotEmpty) {
+          fullAddress = '${userProvider.street}, ${userProvider.city}${userProvider.postalCode.isNotEmpty ? ', ${userProvider.postalCode}' : ''}';
+        } else {
+          fullAddress = 'Belum ada alamat. Tap "Ubah" untuk mengatur alamat.';
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Pickup Address',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Alamat Penjemputan',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AddressScreen()),
+                      );
+                    }, 
+                    child: const Text('Ubah', style: TextStyle(color: AppColors.primaryGold)),
+                  )
+                ],
               ),
-              TextButton(
-                onPressed: () {}, 
-                child: const Text('Edit', style: TextStyle(color: AppColors.primaryGold)),
-              )
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.lightGold.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.location_on_rounded, color: AppColors.primaryGold),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Rumah', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                          const SizedBox(height: 4),
+                          Text(
+                            fullAddress,
+                            style: TextStyle(
+                              color: userProvider.street.isNotEmpty ? AppColors.textGrey : Colors.orange,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.lightGold.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.location_on_rounded, color: AppColors.primaryGold),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('Home', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                      SizedBox(height: 4),
-                      Text(
-                        '123 Green Street, Eco City, Jakarta 12345',
-                        style: TextStyle(color: AppColors.textGrey, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // 2. Input Volume Minyak
   Widget _buildVolumeInput() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -188,7 +210,7 @@ class _PickupScreenState extends State<PickupScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Volume (Liters)',
+            'Volume (Liter)',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
           ),
           const SizedBox(height: 12),
@@ -196,7 +218,7 @@ class _PickupScreenState extends State<PickupScreen> {
             controller: _volumeController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              hintText: 'Enter volume',
+              hintText: 'Masukkan volume',
               hintStyle: const TextStyle(color: AppColors.textGrey),
               filled: true,
               fillColor: AppColors.backgroundLight,
@@ -204,7 +226,7 @@ class _PickupScreenState extends State<PickupScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              suffixText: 'liters',
+              suffixText: 'liter',
               suffixStyle: const TextStyle(color: AppColors.textGrey, fontWeight: FontWeight.bold),
             ),
           ),
@@ -213,23 +235,22 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
-  // 3. Info Rules (Aturan Pickup)
   Widget _buildImportantRules() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Important Rules',
+          'Aturan Penting',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
         ),
         const Text(
-          'Please follow these guidelines:',
+          'Harap ikuti panduan berikut:',
           style: TextStyle(color: AppColors.textGrey, fontSize: 14),
         ),
         const SizedBox(height: 12),
-        _buildRuleItem('Minimum 3 liters - We only collect batches of 3 liters or more'),
-        _buildRuleItem('Maximum 40 liters - Per pickup request limit'),
-        _buildRuleItem('Proper packaging - Use sealed containers, no leakage allowed'),
+        _buildRuleItem('Minimal 3 liter - Kami hanya menjemput 3 liter atau lebih'),
+        _buildRuleItem('Maksimal 40 liter - Batas per permintaan penjemputan'),
+        _buildRuleItem('Kemasan yang rapat - Gunakan wadah tertutup, tidak boleh bocor'),
       ],
     );
   }
@@ -253,18 +274,17 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
-  // 4. Input Catatan Buat Driver
   Widget _buildNotesInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Notes for Driver',
+          'Catatan untuk Pengemudi',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
         ),
         const SizedBox(height: 4),
         const Text(
-          'Optional. Help the driver find you easier.',
+          'Opsional. Bantu pengemudi menemukan Anda lebih mudah.',
           style: TextStyle(color: AppColors.textGrey, fontSize: 12),
         ),
         const SizedBox(height: 12),
@@ -272,7 +292,7 @@ class _PickupScreenState extends State<PickupScreen> {
           controller: _notesController,
           maxLines: 3,
           decoration: InputDecoration(
-            hintText: 'Any special instructions? e.g., gate code, parking info',
+            hintText: 'Ada instruksi khusus? Misalnya kode gerbang, info parkir',
             hintStyle: const TextStyle(color: AppColors.textGrey),
             filled: true,
             fillColor: Colors.white,
@@ -290,13 +310,12 @@ class _PickupScreenState extends State<PickupScreen> {
     );
   }
 
-  // 🌟 TAMBAHAN 6: Terima provider, lalu jalankan fungsi _processPickup 🌟
   Widget _buildSubmitButton(UserProvider userProvider) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: () => _processPickup(userProvider),
+        onPressed: _isProcessing ? null : () => _processPickup(userProvider),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryGold,
           shape: RoundedRectangleBorder(
@@ -304,10 +323,16 @@ class _PickupScreenState extends State<PickupScreen> {
           ),
           elevation: 0,
         ),
-        child: const Text(
-          'Next',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+        child: _isProcessing
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              )
+            : const Text(
+                'Selanjutnya',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
       ),
     );
   }

@@ -41,7 +41,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         backgroundColor: AppColors.primaryGold,
         elevation: 0,
         title: const Text(
-          'Personal Information',
+          'Informasi Pribadi',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -56,14 +56,14 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Update your personal details',
+            'Perbarui data pribadi Anda',
               style: TextStyle(fontSize: 16, color: AppColors.textGrey),
             ),
             const SizedBox(height: 24),
             
             // 1. Kolom Full Name
             _buildTextField(
-              label: 'Full Name', 
+              label: 'Nama Lengkap', 
               controller: _nameController, 
               icon: Icons.person_outline
             ),
@@ -71,7 +71,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             
             // 2. Kolom Email (Read-Only)
             _buildTextField(
-              label: 'Email Address', 
+              label: 'Alamat Email', 
               controller: _emailController, 
               icon: Icons.email_outlined, 
               isReadOnly: true
@@ -80,7 +80,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             
             // 3. Kolom Nickname 🌟 (Menggantikan Phone Number)
             _buildTextField(
-              label: 'Nickname', 
+              label: 'Nama Panggilan', 
               controller: _nicknameController, 
               icon: Icons.badge_outlined, // Ikon ID card/badge
             ),
@@ -105,7 +105,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Profile updated successfully! 🌱'),
+                            content: Text('Profil berhasil diperbarui! 🌱'),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -117,7 +117,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error updating profile: $e'),
+                            content: Text('Gagal memperbarui profil: $e'),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -133,7 +133,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   elevation: 2,
                 ),
                 child: const Text(
-                  'Save Changes',
+                  'Simpan Perubahan',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

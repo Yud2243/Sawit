@@ -122,13 +122,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Icon(Icons.eco_rounded, size: 80, color: AppColors.primaryGold),
                 const SizedBox(height: 24),
                 const Text(
-                  'Welcome Back!',
+                  'Selamat Datang Kembali!',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textDark),
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Login to continue your green journey',
+                  'Masuk untuk melanjutkan perjalanan hijau Anda',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: AppColors.textGrey),
                 ),
@@ -159,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: 'Kata Sandi',
                     prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primaryGold),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -195,20 +195,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: _isLoading 
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                      : const Text('Masuk', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
                 const SizedBox(height: 24),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account? ", style: TextStyle(color: AppColors.textGrey)),
+                    const Text("Belum punya akun? ", style: TextStyle(color: AppColors.textGrey)),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
                       },
                       child: const Text(
-                        'Register', 
+                        'Daftar', 
                         style: TextStyle(color: AppColors.primaryGold, fontWeight: FontWeight.bold),
                       ),
                     ),
